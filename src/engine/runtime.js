@@ -534,6 +534,18 @@ class Runtime extends EventEmitter {
          * Total number of finished or errored scratch-storage load() requests since the runtime was created or cleared.
          */
         this.finishedAssetRequests = 0;
+
+        /**
+         * Export some internal values for extensions.
+         */
+        this.exports = {
+            i_will_not_ask_for_help_when_these_break: () => {
+                console.warn('You are using unsupported APIs. WHEN your code breaks, do not expect help.');
+                return ({
+                    ArgumentTypeMap
+                });
+            }
+        };
     }
 
     /**
