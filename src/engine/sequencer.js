@@ -288,9 +288,12 @@ class Sequencer {
      * @param {number} branchNum Which branch to step to (i.e., 1, 2).
      * @param {boolean} isLoop Whether this block is a loop.
      */
-    stepToBranch (thread, branchNum, isLoop) {
+    stepToBranch (thread, branchNum, isLoop, onEnd) {
         if (!branchNum) {
             branchNum = 1;
+        }
+        if (!onEnd) {
+            onEnd = () => {};
         }
         const currentBlockId = thread.peekStack();
         const branchId = thread.target.blocks.getBranch(
@@ -298,6 +301,7 @@ class Sequencer {
             branchNum
         );
         thread.peekStackFrame().isLoop = isLoop;
+        thread.peekStackFrame().onEnd = onEnd;
         if (branchId) {
             // Push branch ID to the thread's stack.
             thread.pushStack(branchId);
