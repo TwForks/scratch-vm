@@ -152,7 +152,7 @@ const executeInCompatibilityLayer = function*(inputs, blockFunction, isWarp, use
     };
 
     const executeBlock = () => {
-        blockUtility.init(thread, blockId, stackFrame);
+        blockUtility.init(thread, blockId, stackFrame, branchInfo);
         return blockFunction(inputs, blockUtility);
     };
 
