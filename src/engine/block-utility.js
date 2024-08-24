@@ -120,8 +120,8 @@ class BlockUtility {
      * @param {number} branchNum Which branch to step to (i.e., 1, 2).
      * @param {boolean} isLoop Whether this block is a loop.
      */
-    startBranch (branchNum, isLoop) {
-        this.sequencer.stepToBranch(this.thread, branchNum, isLoop);
+    startBranch (branchNum, isLoop, onEnd) {
+        this.sequencer.stepToBranch(this.thread, branchNum, isLoop, onEnd || (() => {}));
     }
 
     /**
