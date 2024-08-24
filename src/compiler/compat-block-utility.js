@@ -15,13 +15,6 @@ class CompatibilityLayerBlockUtility extends BlockUtility {
         this._startedBranch = [branchNumber, isLoop];
     }
 
-    startBranchAsync (branchNumber, isLoop) {
-        this._startedBranch = [branchNumber, isLoop];
-        return new Promise((resolve) => {
-            this._branchInfo.onEnd.push(resolve);
-        });
-    }
-
     startProcedure () {
         throw new Error('startProcedure is not supported by this BlockUtility');
     }
