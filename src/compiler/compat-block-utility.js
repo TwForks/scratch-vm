@@ -11,7 +11,7 @@ class CompatibilityLayerBlockUtility extends BlockUtility {
     }
 
     startBranch (branchNumber, isLoop, onEnd) {
-        this._branchInfo.onEnd.push(onEnd || () => {});
+        this._branchInfo.onEnd.push(onEnd || (() => {}));
         this._startedBranch = [branchNumber, isLoop];
     }
 
