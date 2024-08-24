@@ -18,9 +18,7 @@ class CompatibilityLayerBlockUtility extends BlockUtility {
     startBranchAsync (branchNumber, isLoop) {
         this._startedBranch = [branchNumber, isLoop];
         return new Promise((resolve) => {
-            this._branchInfo.onEnd.push(() => {
-                resolve();
-            });
+            this._branchInfo.onEnd.push(resolve);
         });
     }
 
