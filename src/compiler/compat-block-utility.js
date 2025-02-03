@@ -33,6 +33,7 @@ class CompatibilityLayerBlockUtility extends BlockUtility {
         this.thread = thread;
         this.sequencer = thread.target.runtime.sequencer;
         this._startedBranch = null;
+        this._forceRevaluationOfArguments = false;
         thread.stack[0] = fakeBlockId;
         thread.compatibilityStackFrame = stackFrame;
     }
