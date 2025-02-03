@@ -135,6 +135,7 @@ const isPromise = value => (
     typeof value.then === 'function'
 );
 const executeInCompatibilityLayer = function*(inputs, blockFunction, isWarp, useFlags, blockId, branchInfo) {
+    const inputNames = new Set(Object.keys(inputs));
     const thread = globalState.thread;
     const blockUtility = globalState.blockUtility;
     const stackFrame = branchInfo ? branchInfo.stackFrame : {};
@@ -151,12 +152,32 @@ const executeInCompatibilityLayer = function*(inputs, blockFunction, isWarp, use
         return returnValue;
     };
 
-    const executeBlock = () => {
+    const inputCache = {};
+    let firstRun = true;
+    const executeBlock = function*() {
+        let callInputs, reEvaluate = new Set();
+        if (firstRun || blockUtility._forceRevaluationOfArguments) {
+            firstRun = false;
+            if (blockUtility._forceRevaluationOfArguments) {
+                if (Array.isArray(blockUtility._forceRevaluationOfArguments)) {
+                    reEvaluate = new Set(blockUtility._forceRevaluationOfArguments);
+                } else {
+                    reEvaluate = inputNames;
+                }
+                blockUtility._forceRevaluationOfArguments = false;
+                callInputs = {};
+            }
+            for (const inputName of reEvaluate) {
+                const inputValue = yield* (inputs[inputName]());
+                inputCache[inputName] = inputValue;
+                if (callInputs) callInputs[inputName] = inputValue;
+            }
+        }
         blockUtility.init(thread, blockId, stackFrame);
-        return blockFunction(inputs, blockUtility);
+        return blockFunction(callInputs || inputCache, blockUtility);
     };
 
-    let returnValue = executeBlock();
+    let returnValue = yield* executeBlock();
     if (isPromise(returnValue)) {
         returnValue = finish(yield* waitPromise(returnValue));
         if (useFlags) hasResumedFromPromise = true;
@@ -183,7 +204,7 @@ const executeInCompatibilityLayer = function*(inputs, blockFunction, isWarp, use
             yield;
         }
 
-        returnValue = executeBlock();
+        returnValue = yield* executeBlock();
         if (isPromise(returnValue)) {
             returnValue = finish(yield* waitPromise(returnValue));
             if (useFlags) hasResumedFromPromise = true;
