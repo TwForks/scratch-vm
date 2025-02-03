@@ -157,7 +157,11 @@ const executeInCompatibilityLayer = function*(inputs, blockFunction, isWarp, use
     const executeBlock = function*() {
         let callInputs, reEvaluate = new Set();
         if (firstRun || blockUtility._forceRevaluationOfArguments) {
-            firstRun = false;
+            if (firstRun) {
+                blockUtility._forceRevaluationOfArguments = false;
+                reEvaluate = inputNames;
+                firstRun = false;
+            }
             if (blockUtility._forceRevaluationOfArguments) {
                 if (Array.isArray(blockUtility._forceRevaluationOfArguments)) {
                     reEvaluate = new Set(blockUtility._forceRevaluationOfArguments);
@@ -168,6 +172,7 @@ const executeInCompatibilityLayer = function*(inputs, blockFunction, isWarp, use
                 callInputs = {};
             }
             for (const inputName of reEvaluate) {
+                if (!inputNames.has(inputName)) continue;
                 const inputValue = yield* (inputs[inputName]());
                 inputCache[inputName] = inputValue;
                 if (callInputs) callInputs[inputName] = inputValue;
