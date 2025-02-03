@@ -1333,7 +1333,7 @@ class JSGenerator {
         for (const inputName of Object.keys(node.inputs)) {
             const input = node.inputs[inputName];
             const compiledInput = this.descendInput(input).asSafe();
-            result += `"${sanitize(inputName)}":${compiledInput},`;
+            result += `"${sanitize(inputName)}":(function*(){ return( ${compiledInput} ); }),`;
         }
         for (const fieldName of Object.keys(node.fields)) {
             const field = node.fields[fieldName];
@@ -1445,7 +1445,8 @@ JSGenerator.unstable_exports = {
     ConstantInput,
     VariableInput,
     Frame,
-    sanitize
+    sanitize,
+    jsexecute
 };
 
 // Test hook used by automated snapshot testing.
