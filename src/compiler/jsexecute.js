@@ -173,7 +173,9 @@ const executeInCompatibilityLayer = function*(inputs, blockFunction, isWarp, use
             }
             for (const inputName of reEvaluate) {
                 if (!inputNames.has(inputName)) continue;
-                const inputValue = yield* (inputs[inputName]());
+                const inputValue = (
+                    typeof inputs[inputName] === 'function'
+                 ) ? (yield* (inputs[inputName]())) : inputs[inputName];
                 inputCache[inputName] = inputValue;
                 if (callInputs) callInputs[inputName] = inputValue;
             }
