@@ -1465,6 +1465,9 @@ class Runtime extends EventEmitter {
             if (!blockInfo.disableMonitor && context.inputList.length === 0) {
                 blockJSON.checkboxInFlyout = true;
             }
+            if (blockInfo.shadow_argument_reporter) {
+                blockJSON.shadow_argument_reporter = true;
+            }
         } else if (
             blockInfo.branchIconURI || (
                 blockInfo.blockType === BlockType.LOOP &&
