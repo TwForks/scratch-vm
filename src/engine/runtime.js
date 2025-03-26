@@ -534,6 +534,13 @@ class Runtime extends EventEmitter {
          * Total number of finished or errored scratch-storage load() requests since the runtime was created or cleared.
          */
         this.finishedAssetRequests = 0;
+
+        /**
+         * TW: Set of hat's to never pause.
+         * This is mainly for the debugger addon and extensions.
+         * @type {Set<string>}
+         */
+        this.neverPauseHats = new Set();
     }
 
     /**
