@@ -83,7 +83,7 @@ class Scratch3VideoSensingBlocks {
          * direction values.
          * @type {VideoMotion}
          */
-        this.detect = new VideoMotion();
+        this.detect = new VideoMotion({ width: this.runtime.stageWidth, height: this.runtime.stageHeight });
 
         /**
          * The last millisecond epoch timestamp that the video stream was
@@ -99,12 +99,21 @@ class Scratch3VideoSensingBlocks {
          */
         this.firstInstall = true;
 
+        /**
+         * tw: The current dimensions.
+         * @type {number[]}
+         */
+        this.DIMENSIONS = [this.runtime.stageWidth, this.runtime.stageHeight];
+
         if (this.runtime.ioDevices) {
             // Configure the video device with values from globally stored locations.
             this.runtime.on(Runtime.PROJECT_LOADED, this.updateVideoDisplay.bind(this));
 
             // Clear target motion state values when the project starts.
             this.runtime.on(Runtime.PROJECT_RUN_START, this.reset.bind(this));
+
+            // Update the display size if the stage size was changed.
+            this.runtime.on(Runtime.STAGE_SIZE_CHANGED, this.updateVideoSize.bind(this));
 
             // Kick off looping the analysis logic.
             this._loop();
@@ -130,9 +139,6 @@ class Scratch3VideoSensingBlocks {
      */
     static get DIMENSIONS () {
         return [480, 360];
-    }
-    get DIMENSIONS() {
-        return [this.runtime.stageWidth, this.runtime.stageHeight];
     }
 
     /**
@@ -196,6 +202,17 @@ class Scratch3VideoSensingBlocks {
         if (stage) {
             stage.videoState = state;
         }
+    }
+
+    /**
+     * tw: Updates the video size.
+     */
+    updateVideoSize () {
+        // TODO: should we keep the old motion values?
+        this.DIMENSIONS[0] = this.runtime.stageWidth;
+        this.DIMENSIONS[1] = this.runtime.stageHeight;
+        this.reset();
+        this.detect.setSize({ width: this.runtime.stageWidth, height: this.runtime.stageHeight });
     }
 
     /**
