@@ -124,9 +124,15 @@ class Scratch3VideoSensingBlocks {
      * Dimensions the video stream is analyzed at after its rendered to the
      * sample canvas.
      * @type {Array.<number>}
+     * tw: This is here for compatibility reasons.
+     *     The actual dimensions are grabbed from the Runtime.
+     * @depricated
      */
     static get DIMENSIONS () {
         return [480, 360];
+    }
+    get DIMENSIONS() {
+        return [this.runtime.stageWidth, this.runtime.stageHeight];
     }
 
     /**
@@ -241,7 +247,7 @@ class Scratch3VideoSensingBlocks {
         if (offset > Scratch3VideoSensingBlocks.INTERVAL) {
             const frame = this.runtime.ioDevices.video.getFrame({
                 format: Video.FORMAT_IMAGE_DATA,
-                dimensions: Scratch3VideoSensingBlocks.DIMENSIONS
+                dimensions: this.DIMENSIONS
             });
             if (frame) {
                 this._lastUpdate = time;
