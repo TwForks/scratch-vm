@@ -132,15 +132,16 @@ class VideoMotion {
         this.size.width = (+newSize.width || +this.size.width) || DEFAULT_WIDTH;
         this.size.height = (+newSize.height || +this.size.height) || DEFAULT_HEIGHT;
         this.size.area = this.size.width * this.size.height;
-        this.makeBuffs();
+        this._makeBuffs();
     }
 
     /**
      * tw: Allows for updating the display size.
      */
-    makeBuffs () {
+    _makeBuffs () {
         // tw: Attempt to anylize the frame just in case, and then reset the data.
         this.analyzeFrame();
+        // TODO: Should we keep the old motion values?
         this.reset();
         
         /**
