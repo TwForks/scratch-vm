@@ -156,12 +156,12 @@ class VideoMotionView {
     constructor (motion, output = OUTPUT.XYT, size = {}) {
         /**
          * The size of the debug canvas output.
-         * @type {{width: number, height: number}}
+         * @type {{width: number, height: number, area: number}}
          * @private
          */
         this.size = size || {};
-        this.size.width = Math.max(+this.size.width, DEFAULT_WIDTH);
-        this.size.height = Math.max(+this.size.height, DEFAULT_HEIGHT);
+        this.size.width = +this.size.width || DEFAULT_WIDTH;
+        this.size.height = +this.size.height || DEFAULT_HEIGHT;
         this.size.area = this.size.width * this.size.height;
 
         /**
@@ -216,7 +216,7 @@ class VideoMotionView {
     _eachAddress (xStart, yStart, xStop, yStop, fn) {
         for (let i = yStart; i < yStop; i++) {
             for (let j = xStart; j < xStop; j++) {
-                const address = (i * WIDTH) + j;
+                const address = (i * this.size.width) + j;
                 fn(address, j, i);
             }
         }
@@ -257,7 +257,7 @@ class VideoMotionView {
     _grads (address) {
         const {curr, prev} = this.motion;
         const gradX = (curr[address - 1] & 0xff) - (curr[address + 1] & 0xff);
-        const gradY = (curr[address - this.size.width] & 0xff) - (curr[address + WIDTH] & 0xff);
+        const gradY = (curr[address - this.size.width] & 0xff) - (curr[address + this.size.width] & 0xff);
         const gradT = (prev[address] & 0xff) - (curr[address] & 0xff);
         return {gradX, gradY, gradT};
     }
