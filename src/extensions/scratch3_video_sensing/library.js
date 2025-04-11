@@ -12,14 +12,16 @@ const {motionVector, scratchAtan2} = require('./math');
 /**
  * The width of the intended resolution to analyze for motion.
  * @type {number}
+ * @default
  */
-const WIDTH = 480;
+const DEFAULT_WIDTH = 480;
 
 /**
  * The height of the intended resolution to analyze for motion.
  * @type {number}
+ * @default
  */
-const HEIGHT = 360;
+const DEFAULT_HEIGHT = 360;
 
 /**
  * A constant value to scale the magnitude of the x and y components called u
@@ -75,10 +77,19 @@ const LOCAL_THRESHOLD = THRESHOLD / 3;
  * Store the necessary image pixel data to compares frames of a video and
  * detect an amount and direction of motion in the full sample or in a
  * specified area.
+ * @param {{width: number, height: number}} [size] The default output size.
  * @constructor
  */
 class VideoMotion {
-    constructor () {
+    constructor (size) {
+        /**
+         * tw: Output size.
+         * @type {{width: number, height: number, area: number}}
+         * @private To update this use setSize instead.
+         */
+        this.size = size || {};
+        this.setSize(this.size); // Load the current size data.
+        
         /**
          * The number of frames that have been added from a source.
          * @type {number}
@@ -110,7 +121,28 @@ class VideoMotion {
          * @type {Uint32Array}
          */
         this.curr = null;
+    }
 
+    /**
+     * tw: Updates the display size.
+     * NOTE: This will reset the frame counter!
+     * @param {{width: number, height: number}} newSize The new display size.
+     */
+    setSize(newSize) {
+        this.size.width = (+newSize.width || +this.size.width) || DEFAULT_WIDTH;
+        this.size.height = (+newSize.height || +this.size.height) || DEFAULT_HEIGHT;
+        this.size.area = this.size.width * this.size.height;
+        this.makeBuffs();
+    }
+
+    /**
+     * tw: Allows for updating the display size.
+     */
+    makeBuffs () {
+        // tw: Attempt to anylize the frame just in case, and then reset the data.
+        this.analyzeFrame();
+        this.reset();
+        
         /**
          * A copy of the last frame's pixel values.
          * @type {Uint32Array}
@@ -122,21 +154,21 @@ class VideoMotion {
          * One for the current value. And one for the last value.
          * @type {number}
          */
-        this._arrays = new ArrayBuffer(WIDTH * HEIGHT * 2 * 1);
+        this._arrays = new ArrayBuffer(this.size.area * 2);
 
         /**
          * A clamped uint8 view of _arrays. One component of each index of the
          * curr member is copied into this array.
          * @type {number}
          */
-        this._curr = new Uint8ClampedArray(this._arrays, WIDTH * HEIGHT * 0 * 1, WIDTH * HEIGHT);
+        this._curr = new Uint8ClampedArray(this._arrays, 0, this.size.area);
 
         /**
          * A clamped uint8 view of _arrays. One component of each index of the
          * prev member is copied into this array.
          * @type {number}
          */
-        this._prev = new Uint8ClampedArray(this._arrays, WIDTH * HEIGHT * 1 * 1, WIDTH * HEIGHT);
+        this._prev = new Uint8ClampedArray(this._arrays, this.size.area, this.size.area);
     }
 
     /**
@@ -190,6 +222,10 @@ class VideoMotion {
             return;
         }
         this.lastAnalyzedFrame = this.frameNumber;
+
+        // tw: For performance reasons we will grab the size only once.
+        const WIDTH = this.size.width;
+        const HEIGHT = this.size.height;
 
         const {
             _curr: curr,
@@ -281,6 +317,10 @@ class VideoMotion {
             // Don't have two frames to analyze yet
             return;
         }
+
+        // tw: For performance reasons we will grab the size only once.
+        const WIDTH = this.size.width;
+        const HEIGHT = this.size.height;
 
         // Skip if the current frame has already been considered for this state.
         if (state.motionFrameNumber !== this.frameNumber) {
