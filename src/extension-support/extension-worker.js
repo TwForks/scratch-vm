@@ -101,7 +101,7 @@ global.Scratch.extensions = {
 };
 
 // TW: Allow for magical VM apis to be used by extensions in this context.
-global.Scratch.extensions.refresh = (id) => {
+global.Scratch.extensions.refresh = id => {
     if (!global.parent) return;
     global.parent.postMessage(JSON.stringify({
         TW_extensionAPI: true,
@@ -111,7 +111,7 @@ global.Scratch.extensions.refresh = (id) => {
         }
     }), '*');
 };
-global.Scratch.extensions.loadBuiltIn = (id) => {
+global.Scratch.extensions.loadBuiltIn = id => {
     if (!global.parent) return;
     global.parent.postMessage(JSON.stringify({
         TW_extensionAPI: true,
