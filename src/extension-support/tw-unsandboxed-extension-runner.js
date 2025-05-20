@@ -152,6 +152,8 @@ const setupUnsandboxedExtensionAPI = vm => new Promise(resolve => {
         link.remove();
     };
 
+    Scratch.extensions.refresh = (id) => vm.extensionManager.refreshBlocks(id);
+
     Scratch.translate = createTranslate(vm);
 
     global.Scratch = Scratch;
