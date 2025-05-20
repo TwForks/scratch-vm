@@ -100,7 +100,8 @@ global.Scratch.extensions = {
     register: extensionWorker.register.bind(extensionWorker)
 };
 
-// TW: Allow for magical VM apis to be used by extensions in this context.
+// TW: Allow for some specific VM APIs that are considered safe,
+//     to be used by extensions in this context.
 global.Scratch.extensions.refresh = id => {
     if (!global.parent) return;
     global.parent.postMessage(JSON.stringify({
