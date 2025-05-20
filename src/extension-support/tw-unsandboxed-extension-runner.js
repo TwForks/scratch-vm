@@ -152,7 +152,9 @@ const setupUnsandboxedExtensionAPI = vm => new Promise(resolve => {
         link.remove();
     };
 
+    // Mapping's to extensionManager functions for parity with worker and sandboxed extensions.
     Scratch.extensions.refresh = (id) => vm.extensionManager.refreshBlocks(id);
+    Scratch.extensions.loadBuiltIn = (id) => vm.extensionManager.loadExtensionIdSync(id);
 
     Scratch.translate = createTranslate(vm);
 
