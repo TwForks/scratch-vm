@@ -96,6 +96,7 @@ Object.assign(global.Scratch, ScratchCommon, {
  */
 const extensionWorker = new ExtensionWorker();
 global.Scratch.extensions = {
+    worker: true, // TW: To match the other stuff like unsandboxed.
     register: extensionWorker.register.bind(extensionWorker)
 };
 
