@@ -1,4 +1,5 @@
-const Color = require('../util/color');
+const Color = require('./color');
+const Sanitizer = require('./value-sanitizer');
 
 /**
  * @fileoverview
@@ -33,6 +34,11 @@ const isNotActuallyZero = val => {
 };
 
 class Cast {
+    /**
+     * TW: this is for extensions, it is done like this to keep parity with the old code.
+     */
+    static exports = {isNotActuallyZero, Sanitizer};
+
     /**
      * Scratch cast to number.
      * Treats NaN as 0.
@@ -233,6 +239,158 @@ class Cast {
             return Cast.LIST_INVALID;
         }
         return index;
+    }
+
+    // TW: More casting tool's meant for extensions.
+
+    /**
+     * Convert's a translatable menu value to a index or a string.
+     * @param {string|number} value Item in valid format.
+     * @param {number} [count] Modulo value. this is optional.
+     * @param {string[]} [valid] Option valid options. in all lowercase.
+     * @returns {string} The casted option.
+     * NOTE: If you use valid, make sure you handle translation support correctly;
+     *       make sure the items are all lowercase.
+     */
+    asNumberedItem (value, count, valid) {
+        // eslint-disable-next-line spaced-comment
+        /**!
+         * This code is modified and borrowed from the following code.
+         * @see https://raw.githubusercontent.com/surv-is-a-dev/surv-is-a-dev.github.io/fa453c76e2bcc2ceed87cc4c9af4ee2951886139/static/0001tt.txt
+         * It is used as a reference to handle the numbered dropdown values.
+         */
+        if (typeof value === 'number') {
+            value = ((+value % (1 + count || 1)) || 1);
+            if (!valid) return valid.toString();
+            // Disable === null and === checks because `== null` passes if the value is
+            // null or undefined, which is what we want.
+            // eslint-disable-next-line no-eq-null, eqeqeq
+            if (valid[value] == null) return '1'; // Fallback to 1 if the value is null / undefined.
+            return value.toString(); // The index is valid so we can just return it.
+        }
+        value = this.toString(value).toLowerCase();
+        if (value[0] !== '(') return value;
+        const match = value.match(/^\([0-9]+\) ?/); // The space is optional for the sake of ease.
+        if (match && match[0]) {
+            let v = parseInt(match[0].trim().slice(1, -1), 10);
+            if (count) v = ((v % (1 + count || 1)) || 1);
+            if (!valid) return v.toString();
+            // See above.
+            // eslint-disable-next-line no-eq-null, eqeqeq
+            if (valid[value] == null) return '1';
+            return v.toString();
+        }
+        if (valid.indexOf(value.toLowerCase()) === -1) return '1'; // Fallback to 1 if the item is not valid.
+        return value;
+    }
+
+    /**
+     * Determine if a Scratch argument number represents a big integer. (BigInt)
+     * This treats normal integers as valid BigInts. @see {isInt}
+     * @param {*} val Value to check.
+     * @return {boolean} True if number looks like an integer.
+     */
+    static isBigInt (val) {
+        return (typeof val === 'bigint') || this.isInt(val);
+    }
+
+    /**
+     * Scratch cast to BigInt.
+     * Treats NaN-likes as 0. Floats are truncated.
+     * @param {*} value Value to cast to BigInt.
+     * @return {bigint} The Scratch-casted BigInt value.
+     */
+    static toBigInt (value) {
+        // If the value is already a BigInt then we don't have to do anything.
+        if (typeof value === 'bigint') return value;
+        // Handle NaN like value's as BigInt will throw an error if it cannot coerce the value.
+        if (isNaN(value)) return 0n;
+        // Same with floats.
+        if (!this.isBigInt(value)) value = Math.trunc(value);
+        // eslint-disable-next-line no-undef
+        return BigInt(value);
+    }
+
+    /**
+     * Scratch cast to Object.
+     * @param {*} value Value to cast to Object.
+     * @param {boolean} [noBad] Should null and undefined be disabled? Default is true.
+     * @return {!object} The Scratch-casted Object value.
+     * WARNING: This is vulnerable to prototype pollution so be careful.
+     */
+    static toObjectLike (value, noBad = true) {
+        // eslint-disable-next-line no-eq-null, eqeqeq
+        if (value == null && noBad) return {};
+        if (typeof value === 'object') return noBad ? Sanitizer.value(value) : value;
+        if (typeof value !== 'string' || value === '') return {};
+        try {
+            if (noBad) {
+                value = Sanitizer.parseJSON(value, '');
+            } else value = JSON.parse(value);
+        } catch {
+            value = {};
+        }
+        return this.toObjectLike(value, noBad);
+    }
+
+    /**
+     * Scratch cast to an Object.
+     * Treats null, undefined and arrays as empty objects.
+     * @param {*} value Value to cast to Object.
+     * @return {!object} The Scratch-casted Object value.
+     * WARNING: This is vulnerable to prototype pollution so be careful.
+     */
+    static toObject (value) {
+        if (typeof value === 'object') {
+            // eslint-disable-next-line no-eq-null, eqeqeq
+            if (Array.isArray(value) || value == null) return {};
+            return Sanitizer.object(value, ''); // This doesn't take into account for other Object typed values.
+        }
+        return this.toObject(this.toObjectLike(value, true));
+    }
+
+    /**
+     * Scratch cast to an Array.
+     * Treats null, undefined and objects as empty arrays.
+     * @param {*} value Value to cast to Array.
+     * @return {array} The Scratch-casted Array value.
+     * WARNING: This is vulnerable to prototype pollution so be careful.
+     */
+    static toArray (value) {
+        if (Array.isArray(value)) return Sanitizer.array(value, '');
+        // eslint-disable-next-line no-eq-null, eqeqeq
+        if (typeof value === 'object' && value != null) {
+            try {
+                value = Array.from(value);
+            } catch {
+                value = [];
+            }
+            return this.toArray(value); // Just in case.
+        }
+        return this.toArray(this.toObjectLike(value, true));
+    }
+
+    /**
+     * Scratch cast to a Map.
+     * Treats null and undefined as empty maps.
+     * @param {*} value Value to cast to Map.
+     * @return {map} The Scratch-casted Map value.
+     * NOTE: This is an alternative to `toObject` that prevents top level prototype pollution.
+     */
+    static toMap (value) {
+        if (value instanceof Map) return Sanitizer.map(value, '');
+        // This is done to handle null / undefined values popping up in our values.
+        value = this.toObjectLike(Sanitizer.value(value, ''), true);
+        try {
+            if (!Array.isArray(value)) {
+                if (typeof value === 'object') value = Object.entries(value);
+                else value = [];
+            }
+            value = this.toArray(value); // Cast the value to an array.
+            return Sanitizer.map(new Map(value));
+        } catch {
+            return new Map();
+        }
     }
 }
 
