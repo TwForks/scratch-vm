@@ -100,4 +100,26 @@ global.Scratch.extensions = {
     register: extensionWorker.register.bind(extensionWorker)
 };
 
+// TW: Allow for magical VM apis to be used by extensions in this context.
+global.Scratch.extensions.refresh = (id) => {
+    if (!global.parent) return;
+    global.parent.postMessage(JSON.stringify({
+        TW_extensionAPI: true,
+        TW_command: {
+            type: 'refreshBlocks',
+            args: [id]
+        }
+    }), '*');
+};
+global.Scratch.extensions.loadBuiltIn = (id) => {
+    if (!global.parent) return;
+    global.parent.postMessage(JSON.stringify({
+        TW_extensionAPI: true,
+        TW_command: {
+            type: 'loadExtensionIdSync',
+            args: [id]
+        }
+    }), '*');
+};
+
 global.ScratchExtensions = createScratchX(global.Scratch);
