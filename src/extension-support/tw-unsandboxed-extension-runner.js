@@ -164,9 +164,8 @@ const setupUnsandboxedExtensionAPI = vm => new Promise(resolve => {
             return require('../extension-support/tools');
         },
         set () {
-            throw new Error('no-op');
-        },
-        writable: false
+            throw new Error('Not writable, nice try.');
+        }
     });
 
     global.Scratch = Scratch;
