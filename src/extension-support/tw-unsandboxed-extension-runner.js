@@ -158,6 +158,7 @@ const setupUnsandboxedExtensionAPI = vm => new Promise(resolve => {
 
     Scratch.translate = createTranslate(vm);
 
+    // Make the tools export lazy to save resources when none of the extra tools are used.
     Object.defineProperty(Scratch, 'tools', {
         get () {
             return require('../extension-support/tools');
