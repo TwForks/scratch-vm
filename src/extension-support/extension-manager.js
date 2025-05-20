@@ -134,9 +134,9 @@ class ExtensionManager {
         // Allow for sandboxed extensions, and worker extensions to access some of our APIs.
         // TODO: This works outside of extensions. We may be able to use port's to limit this
         //       to extensions. if we even want to.
-        if (global.addEventListener) {
-            global.addEventListener('message', this._messageListener);
-        }
+        // Extensions are'nt ran when using the test's / CLI so we can test if addEventListener exists,
+        // and only then if it does do we attempt to add the message listener.
+        if (global.addEventListener) global.addEventListener('message', this._messageListener);
     }
 
     /**
