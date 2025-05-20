@@ -226,6 +226,23 @@ class VirtualMachine extends EventEmitter {
             i_will_not_ask_for_help_when_these_break: () => {
                 console.warn('You are using unsupported APIs. WHEN your code breaks, do not expect help.');
 
+                // Super secret export, only use if you know what you're doing.
+                if (this.superSecretThingDoNotDocument === 'yes') {
+                    console.error('You are using super secret scary APIs. WHEN your code breaks, do not expect help.');
+                    try {
+                        // eslint-disable-next-line no-undef, camelcase
+                        this.superSecretThingDoNotDocument = __webpack_require__;
+                    } catch {
+                        try {
+                            this.superSecretThingDoNotDocument = require;
+                        } catch {
+                            this.superSecretThingDoNotDocument = () => {
+                                throw new Error('Unable to get require.');
+                            };
+                        }
+                    }
+                }
+
                 return ({
                     // This contains extra exports for all the stuff in the util directory.
                     // Preferably add future exports to here instead.
