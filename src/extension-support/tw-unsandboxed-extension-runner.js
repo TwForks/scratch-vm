@@ -158,6 +158,16 @@ const setupUnsandboxedExtensionAPI = vm => new Promise(resolve => {
 
     Scratch.translate = createTranslate(vm);
 
+    Object.defineProperty(Scratch, 'tools', {
+        get () {
+            return require('../extension-support/tools');
+        },
+        set () {
+            throw new Error('no-op');
+        },
+        writable: false
+    });
+
     global.Scratch = Scratch;
     global.ScratchExtensions = createScratchX(Scratch);
 

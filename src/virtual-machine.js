@@ -215,7 +215,7 @@ class VirtualMachine extends EventEmitter {
         this.variableListener = this.variableListener.bind(this);
 
         /**
-         * Export some internal classes for extensions.
+         * TW: Export some internal classes for extensions.
          */
         this.exports = {
             Sprite,
@@ -225,12 +225,20 @@ class VirtualMachine extends EventEmitter {
 
             i_will_not_ask_for_help_when_these_break: () => {
                 console.warn('You are using unsupported APIs. WHEN your code breaks, do not expect help.');
+
                 return ({
-                    JSGenerator: require('./compiler/jsgen.js'),
-                    IRGenerator: require('./compiler/irgen.js').IRGenerator,
-                    ScriptTreeGenerator: require('./compiler/irgen.js').ScriptTreeGenerator,
-                    Thread: require('./engine/thread.js'),
-                    execute: require('./engine/execute.js')
+                    // This contains extra exports for all the stuff in the util directory.
+                    // Preferably add future exports to here instead.
+                    other: require('./extension-support/tools'),
+                    // Extra exports for some constant values.
+                    RESERVED_NAMES: RESERVED_NAMES,
+                    // Compiler exports.
+                    JSGenerator: require('./compiler/jsgen'),
+                    IRGenerator: require('./compiler/irgen').IRGenerator,
+                    ScriptTreeGenerator: require('./compiler/irgen').ScriptTreeGenerator,
+                    // Thread exports.
+                    Thread: require('./engine/thread'),
+                    execute: require('./engine/execute')
                 });
             }
         };
