@@ -130,6 +130,33 @@ class ExtensionManager {
         dispatch.setService('extensions', createExtensionService(this)).catch(e => {
             log.error(`ExtensionManager was unable to register extension service: ${JSON.stringify(e)}`);
         });
+
+        // Allow for sandboxed extensions, and worker extensions to access some of our APIs.
+        // TODO: This works of extensions. We may be able to use port's to limit this to extensions.
+        //       if we even want to.
+        global.addEventListener('message', ({ data }) => {
+            try {
+                data = JSON.parse(data);
+            } catch {
+                return;
+            }
+            if (data.TW_extensionAPI !== true) return; // Make sure this is coming from someone who knows the API. eg- us. (doesn't have to be perfect)
+            // Validation of the message.
+            if ((typeof data.TW_command) !== 'object') return;
+            const post = data.TW_command;
+            if (typeof post.type !== 'string') return;
+            if (!Array.isArray(post.args)) return;
+            switch(post.type) {
+            case 'refreshBlocks':
+                this.refreshBlocks(post.args[0]);
+                break;
+            case 'loadExtensionIdSync':
+                this.loadExtensionIdSync(post.args[0]);
+                break;
+            default:
+                console.warn('Unknown extension API call: ', data.TW_command);
+            }
+        });
     }
 
     /**
