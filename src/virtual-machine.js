@@ -255,7 +255,9 @@ class VirtualMachine extends EventEmitter {
                     ScriptTreeGenerator: require('./compiler/irgen').ScriptTreeGenerator,
                     // Thread exports.
                     Thread: require('./engine/thread'),
-                    execute: require('./engine/execute')
+                    execute: require('./engine/execute'),
+                    // Export the common extension API to provide access to the classes it has. (mainly for userscripts)
+                    extensionAPIcommon: require('./extension-support/tw-extension-api-common.js')
                 });
             }
         };
