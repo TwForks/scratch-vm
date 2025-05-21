@@ -313,7 +313,6 @@ class Cast {
      * Treats null, undefined and arrays as empty objects.
      * @param {*} value Value to cast to Object.
      * @return {!object} The Scratch-casted Object value.
-     * WARNING: This is vulnerable to prototype pollution so be careful.
      */
     static toObject (value) {
         if (typeof value === 'object') {
