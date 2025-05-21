@@ -251,6 +251,8 @@ class VirtualMachine extends EventEmitter {
                     Thread: require('./engine/thread'),
                     execute: require('./engine/execute'),
                     // Export the common extension API to provide access to the classes it has. (mainly for userscripts)
+                    // This combined with the `other` export and a security manager implementation allows userscripts
+                    // and alike to make their own custom Scratch objects, and well use the actual values.
                     extensionAPIcommon: require('./extension-support/tw-extension-api-common.js')
                 });
             }
