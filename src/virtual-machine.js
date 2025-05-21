@@ -230,16 +230,10 @@ class VirtualMachine extends EventEmitter {
                 if (this.superSecretThingDoNotDocument === 'yes') {
                     console.error('You are using super secret scary APIs. WHEN your code breaks, do not expect help.');
                     try {
-                        // eslint-disable-next-line no-undef, camelcase
-                        this.superSecretThingDoNotDocument = __webpack_require__;
+                        // eslint-disable-next-line no-undef, camelcase, no-eval
+                        this.superSecretThingDoNotDocument = eval(`__webpack_require__`);
                     } catch {
-                        try {
-                            this.superSecretThingDoNotDocument = require;
-                        } catch {
-                            this.superSecretThingDoNotDocument = () => {
-                                throw new Error('Unable to get require.');
-                            };
-                        }
+                        throw new Error('Unable to get require.');
                     }
                 }
 
