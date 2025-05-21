@@ -289,23 +289,23 @@ class Cast {
     /**
      * Scratch cast to Object.
      * @param {*} value Value to cast to Object.
-     * @param {boolean} [noBad] Should null and undefined be disabled? Default is true.
+     * @param {boolean} [noBad] Should null and undefined be disabled? Defaults to false.
+     * @param {boolean} [nullAssign] See {Sanitizer.object}. Defaults to false.
      * @return {!object} The Scratch-casted Object value.
-     * WARNING: This is vulnerable to prototype pollution so be careful.
      */
-    static toObjectLike (value, noBad = true) {
+    static toObjectLike (value, noBad = false, nullAssign = false) {
         // eslint-disable-next-line no-eq-null, eqeqeq
-        if (value == null && noBad) return {};
-        if (typeof value === 'object') return noBad ? Sanitizer.value(value) : value;
-        if (typeof value !== 'string' || value === '') return {};
+        if (value == null && noBad) return nullAssign ? Object.create(null) : {};
+        if (typeof value === 'object') return noBad ? Sanitizer.value(value, '', nullAssign) : value;
+        if (typeof value !== 'string' || value === '') return nullAssign ? Object.create(null) : {};
         try {
             if (noBad) {
-                value = Sanitizer.parseJSON(value, '');
+                value = Sanitizer.parseJSON(value, '', nullAssign);
             } else value = JSON.parse(value);
         } catch {
-            value = {};
+            value = nullAssign ? Object.create(null) : {};
         }
-        return this.toObjectLike(value, noBad);
+        return this.toObjectLike(value, noBad, nullAssign);
     }
 
     /**
@@ -318,10 +318,10 @@ class Cast {
     static toObject (value) {
         if (typeof value === 'object') {
             // eslint-disable-next-line no-eq-null, eqeqeq
-            if (Array.isArray(value) || value == null) return {};
-            return Sanitizer.object(value, ''); // This doesn't take into account for other Object typed values.
+            if (Array.isArray(value) || value == null) return Object.create(null);
+            return Sanitizer.object(value, '', true); // This doesn't take into account for other Object typed values.
         }
-        return this.toObject(this.toObjectLike(value, true));
+        return this.toObject(this.toObjectLike(value, true, true));
     }
 
     /**
@@ -329,7 +329,6 @@ class Cast {
      * Treats null, undefined and objects as empty arrays.
      * @param {*} value Value to cast to Array.
      * @return {array} The Scratch-casted Array value.
-     * WARNING: This is vulnerable to prototype pollution so be careful.
      */
     static toArray (value) {
         if (Array.isArray(value)) return Sanitizer.array(value, '');
@@ -342,7 +341,7 @@ class Cast {
             }
             return this.toArray(value); // Just in case.
         }
-        return this.toArray(this.toObjectLike(value, true));
+        return this.toArray(this.toObjectLike(value, true, true));
     }
 
     /**
@@ -350,19 +349,19 @@ class Cast {
      * Treats null and undefined as empty maps.
      * @param {*} value Value to cast to Map.
      * @return {map} The Scratch-casted Map value.
-     * NOTE: This is an alternative to `toObject` that prevents top level prototype pollution.
+     * NOTE: This is an alternative to `toObject`.
      */
     static toMap (value) {
-        if (value instanceof Map) return Sanitizer.map(value, '');
+        if (value instanceof Map) return Sanitizer.map(value, '', true);
         // This is done to handle null / undefined values popping up in our values.
-        value = this.toObjectLike(Sanitizer.value(value, ''), true);
+        value = this.toObjectLike(Sanitizer.value(value, '', true), true);
         try {
             if (!Array.isArray(value)) {
                 if (typeof value === 'object') value = Object.entries(value);
                 else value = [];
             }
             value = this.toArray(value); // Cast the value to an array.
-            return Sanitizer.map(new Map(value));
+            return Sanitizer.map(new Map(value), '', true);
         } catch {
             return new Map();
         }
