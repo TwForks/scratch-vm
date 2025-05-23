@@ -236,7 +236,7 @@ class Cast {
          */
         if (typeof value === 'number') {
             value = ((+value % (1 + count || 1)) || 1);
-            if (!valid) return valid.toString();
+            if (!valid) return value.toString();
             // Disable === null and === checks because `== null` passes if the value is
             // null or undefined, which is what we want.
             // eslint-disable-next-line no-eq-null, eqeqeq
